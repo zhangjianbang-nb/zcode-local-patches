@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "config": {
+    "providerOrder": ["local"],
+    "providerConfigRules": {
+      "providerRules": [
+        {
+          "providerId": "local",
+          "templateId": null,
+          "providerName": "Local OpenAI-compatible engine",
+          "enabled": true,
+          "config": {
+            "group": "standard-personal",
+            "logo": null,
+            "access": { "type": "api-key", "apiKey": "not-needed" },
+            "api": {
+              "type": "openai-chat-completions",
+              "baseUrl": "http://127.0.0.1:18891/v1",
+              "headers": {}
+            },
+            "personalModelIds": ["my-model"],
+            "modelOrder": ["my-model"],
+            "visibility": "visible"
+          }
+        }
+      ]
+    },
+    "modelConfigRules": {
+      "providerModelRules": [
+        {
+          "modelId": "my-model",
+          "providerId": "local",
+          "config": {
+            "enabled": true,
+            "properties": {
+              "requiresMfjsToolSchema": false,
+              "contextWindow": 524288,
+              "inputFormat": {
+                "supportsText": true,
+                "supportsImage": true,
+                "supportsVideo": false,
+                "supportsAudio": false,
+                "supportsPdf": false
+              },
+              "outputFormat": { "supportsText": true },
+              "supportsToolCall": true,
+              "supportsJsonSchemaOutput": false,
+              "supportsNativeWebSearch": false,
+              "supportsMidConversationSystem": false
+            },
+            "optionSpecs": {
+              "reasoningLevel": { "values": ["low", "medium", "high", "max"] },
+              "maxOutputTokens": { "max": 32768 }
+            }
+          }
+        }
+      ]
+    },
+    "defaultModelSelection": {
+      "providerId": "local",
+      "modelId": "my-model",
+      "options": { "reasoningLevel": "max" }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+[Unit]
+Description=监视 zcode 两套 bundle（npm vendor + 桌面/dev .zaicode-dist）是否被覆写（触发 zcode-patches.service）
+Documentation=file:/home/whu/.zcode/FROZEN-VERSION.txt
+
+[Path]
+# ---- npm 那支：npm reify 会整体换代包目录, 表现为 bundle 被 rename 替换 -> PathChanged
+PathChanged=%h/.npm-global/lib/node_modules/zcode-app-cli/vendor/zcode.cjs
+# 目录级: 兜底捕获「就地写入」而不换 inode 的情况
+PathModified=%h/.npm-global/lib/node_modules/zcode-app-cli/vendor
+
+# ---- 桌面/dev 那支（~/.local/bin/ZCode -> ~/.zaicode-dist）------------------
+# 2026-10-04: 这支此前完全在守卫盲区里，当天就出了「开局即 compact + 熔断」事故
+# （把阈值 262k 当 buffer 填 + 配置里过期窗口 292000）。补上监视，重打包即自动重打补丁。
+# 监视 releases 目录（而不是 current 软链）: 新版本会新建 release 子目录，写软链不一定触发。
+PathChanged=%h/.zaicode-dist/releases
+PathModified=%h/.zaicode-dist/releases
+# 窗口漂移是同一类事故的另一半: 窗口一变, 同一个 buffer 的阈值语义就变了 -> 重新反推 buffer
+PathChanged=%h/.zaicode-home/.zcode/v2/provider_config.json
+# 源码树里的两个 build 产物（重打包的源头）
+PathChanged=%h/workspace/ai_workspace/ZCode/apps/zcode-cli/packages/cli/dist
+PathChanged=%h/workspace/ai_workspace/ZCode/packages/desktop/bundled-agents
+
+Unit=zcode-patches.service
+
+[Install]
+WantedBy=default.target

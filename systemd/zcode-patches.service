@@ -1,0 +1,21 @@
+[Unit]
+Description=zcode bundle 补丁守卫（npm 升级覆写 vendor/zcode.cjs 后自动重打本地补丁）
+Documentation=file:/home/whu/.zcode/FROZEN-VERSION.txt
+After=default.target
+# ★ 2026-10-04: 禁用启停限流。
+#   2026-10-03 19:09 npm 升级时，path unit 连续触发了 3 次：前两次"找不到 bundle"
+#   （npm 还在 rename 替换，文件短暂消失），第三次才成功 —— 连失败把限流打满，
+#   unit 被判 unit-start-limit-hit 直接停用，**此后 18 小时无人重放补丁**，
+#   最终导致会话涨到 192K 不 compact（见 zcode-tensorfold-bodytimeout-buffered）。
+#   本 unit 只由 path unit 在文件真的变了时触发，不是定时器，没有"刷爆"风险，
+#   所以限流弊大于利。配合 zcode-patches.sh 里新增的 wait_appear 复现窗口，
+#   单次失败也不再会累积成永久停用。
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+# 脚本自身会等文件写稳定 + node --check 质检, 所以不必在这里 sleep
+ExecStart=/home/whu/workspace/ai_workspace/zcode-patches.sh
+# 失败要留痕 (锚点漂移时需要人工比对源码, 见 journalctl)
+StandardOutput=journal
+StandardError=journal
